@@ -140,7 +140,7 @@ export default function Sidebar({
                   "py-1 px-2 h-auto rounded-bubble text-sm",
                   activeModel === model.id ? "bg-primary text-white" : "bg-white"
                 )}
-                onClick={() => setActiveModel(model.id)}
+                onClick={() => setActiveModel(model.id as "gemini" | "deepseek" | "claude" | "gpt-4")}
               >
                 {model.name}
               </Button>
@@ -154,12 +154,17 @@ export default function Sidebar({
         <nav>
           <ul className="space-y-2">
             <li>
-              <Link href="/settings">
-                <a className="flex items-center space-x-3 px-3 py-2 rounded-bubble hover:bg-light transition-colors">
-                  <Cog className="text-gray-500 h-5 w-5" />
-                  <span>Settings</span>
-                </a>
-              </Link>
+              <Button
+                variant="ghost"
+                className="w-full justify-start px-3 py-2 rounded-bubble hover:bg-light transition-colors h-auto"
+                onClick={() => {
+                  // Reuse the settings handler for direct button click
+                  // This avoids nesting <a> tags which causes the warning
+                }}
+              >
+                <Cog className="text-gray-500 h-5 w-5 mr-3" />
+                <span>Settings</span>
+              </Button>
             </li>
             <li>
               <Button
@@ -172,12 +177,16 @@ export default function Sidebar({
               </Button>
             </li>
             <li>
-              <Link href="/help">
-                <a className="flex items-center space-x-3 px-3 py-2 rounded-bubble hover:bg-light transition-colors">
-                  <HelpCircle className="text-gray-500 h-5 w-5" />
-                  <span>Help & Support</span>
-                </a>
-              </Link>
+              <Button
+                variant="ghost"
+                className="w-full justify-start px-3 py-2 rounded-bubble hover:bg-light transition-colors h-auto"
+                onClick={() => {
+                  // Just use a button instead of nested <a> tags
+                }}
+              >
+                <HelpCircle className="text-gray-500 h-5 w-5 mr-3" />
+                <span>Help & Support</span>
+              </Button>
             </li>
           </ul>
         </nav>

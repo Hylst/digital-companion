@@ -127,7 +127,7 @@ export default function NewCompanionModal({ isOpen, onClose }: NewCompanionModal
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-heading">Create New Companion</DialogTitle>
           <DialogDescription>
@@ -165,7 +165,7 @@ export default function NewCompanionModal({ isOpen, onClose }: NewCompanionModal
                     onClick={() => form.setValue("personality", type.id)}
                   >
                     <div className="flex items-start space-x-3">
-                      <div className={`w-10 h-10 rounded-full bg-${type.color} flex items-center justify-center text-white`}>
+                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-primary">
                         {type.icon === "smile" && <span className="text-lg">😊</span>}
                         {type.icon === "brain" && <span className="text-lg">🧠</span>}
                         {type.icon === "lightbulb" && <span className="text-lg">💡</span>}
@@ -244,7 +244,8 @@ export default function NewCompanionModal({ isOpen, onClose }: NewCompanionModal
                   <FormControl>
                     <Textarea
                       placeholder="Describe your companion's personality, interests, and background..."
-                      rows={3}
+                      rows={5}
+                      className="resize-y min-h-[120px]"
                       {...field}
                     />
                   </FormControl>
@@ -253,13 +254,20 @@ export default function NewCompanionModal({ isOpen, onClose }: NewCompanionModal
               )}
             />
 
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={form.formState.isSubmitting}>
-                Create Companion
-              </Button>
+            <DialogFooter className="flex justify-between flex-row">
+              <div>
+                <Button type="button" variant="outline" onClick={onClose}>
+                  Back to Chat
+                </Button>
+              </div>
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" onClick={onClose}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={form.formState.isSubmitting}>
+                  Create Companion
+                </Button>
+              </div>
             </DialogFooter>
           </form>
         </Form>
