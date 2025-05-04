@@ -67,10 +67,10 @@ export const MAX_COMPANION_NAME_LENGTH = 30;
 export const MAX_COMPANION_DESCRIPTION_LENGTH = 300;
 
 export const AI_MODELS = [
-  { id: "gemini", name: "Gemini", isDefault: true },
-  { id: "deepseek", name: "DeepSeek", isDefault: false },
-  { id: "claude", name: "Claude", isDefault: false },
-  { id: "gpt-4", name: "GPT-4", isDefault: false }
+  { id: "gemini" as AIModel, name: "Gemini", isDefault: true },
+  { id: "deepseek" as AIModel, name: "DeepSeek", isDefault: false },
+  { id: "claude" as AIModel, name: "Claude", isDefault: false },
+  { id: "gpt-4" as AIModel, name: "GPT-4", isDefault: false }
 ];
 
 export const IMAGE_DIMENSIONS = [

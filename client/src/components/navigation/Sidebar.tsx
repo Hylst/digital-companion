@@ -12,7 +12,7 @@ import {
   SheetTrigger,
   SheetClose
 } from "@/components/ui/sheet";
-import { isAIModel } from "@/lib/constants";
+
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useMobile } from "@/hooks/use-mobile";
@@ -23,7 +23,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useCompanionContext } from "@/context/CompanionContext";
-import { Companion } from "@/lib/types";
+import { Companion, AIModel } from "@/lib/types";
 import { AI_MODELS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
@@ -141,7 +141,7 @@ export default function Sidebar({
                   "py-1 px-2 h-auto rounded-bubble text-sm",
                   activeModel === model.id ? "bg-primary text-white" : "bg-white"
                 )}
-                onClick={() => { if (isAIModel(model.id)) setActiveModel(model.id); }}
+                onClick={() => setActiveModel(model.id)}
               >
                 {model.name}
               </Button>
@@ -158,10 +158,7 @@ export default function Sidebar({
               <Button
                 variant="ghost"
                 className="w-full justify-start px-3 py-2 rounded-bubble hover:bg-light transition-colors h-auto"
-                onClick={() => {
-                  // Reuse the settings handler for direct button click
-                  // This avoids nesting <a> tags which causes the warning
-                }}
+                onClick={onOpenApiKeysModal}
               >
                 <Cog className="text-gray-500 h-5 w-5 mr-3" />
                 <span>Settings</span>
@@ -181,9 +178,7 @@ export default function Sidebar({
               <Button
                 variant="ghost"
                 className="w-full justify-start px-3 py-2 rounded-bubble hover:bg-light transition-colors h-auto"
-                onClick={() => {
-                  // Just use a button instead of nested <a> tags
-                }}
+                onClick={() => window.open('https://companionai.example.com/help', '_blank')}
               >
                 <HelpCircle className="text-gray-500 h-5 w-5 mr-3" />
                 <span>Help & Support</span>
