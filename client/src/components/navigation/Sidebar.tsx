@@ -12,6 +12,7 @@ import {
   SheetTrigger,
   SheetClose
 } from "@/components/ui/sheet";
+import { isAIModel } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useMobile } from "@/hooks/use-mobile";
@@ -140,7 +141,7 @@ export default function Sidebar({
                   "py-1 px-2 h-auto rounded-bubble text-sm",
                   activeModel === model.id ? "bg-primary text-white" : "bg-white"
                 )}
-                onClick={() => setActiveModel(model.id as "gemini" | "deepseek" | "claude" | "gpt-4")}
+                onClick={() => { if (isAIModel(model.id)) setActiveModel(model.id); }}
               >
                 {model.name}
               </Button>

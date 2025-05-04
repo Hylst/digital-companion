@@ -1,4 +1,9 @@
-import { Companion } from "./types";
+import { Companion, AIModel } from "./types";
+
+// Type guard pour AIModel
+export function isAIModel(value: string): value is AIModel {
+  return ["gemini", "deepseek", "claude", "gpt-4"].includes(value as AIModel);
+}
 
 export const PERSONALITIES = [
   {

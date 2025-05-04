@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Eye, EyeOff, Link2, X, Info } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
@@ -60,7 +60,7 @@ export default function ApiKeysModal({ isOpen, onClose }: ApiKeysModalProps) {
   });
 
   // Load API keys on open
-  useState(() => {
+  useEffect(() => {
     const fetchApiKeys = async () => {
       try {
         const response = await apiRequest("GET", "/api/settings/api-keys", undefined);
@@ -87,7 +87,7 @@ export default function ApiKeysModal({ isOpen, onClose }: ApiKeysModalProps) {
     if (isOpen) {
       fetchApiKeys();
     }
-  }, [isOpen]);
+  }, [isOpen, form]);
 
   const onSubmit = async (values: FormValues) => {
     // Don't send masked values to the server
@@ -142,7 +142,7 @@ export default function ApiKeysModal({ isOpen, onClose }: ApiKeysModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-xl font-heading">API Key Settings</DialogTitle>
           <DialogDescription>
@@ -306,17 +306,24 @@ export default function ApiKeysModal({ isOpen, onClose }: ApiKeysModalProps) {
             <Alert className="bg-yellow-50 border-yellow-200">
               <Info className="h-4 w-4 text-yellow-600" />
               <AlertDescription className="text-sm text-yellow-800">
-                API keys are stored securely on your device only and never sent to our servers. We don't have access to your keys.
+                API keys are stored securely and are used only to connect to the respective AI services. Your API usage is billed directly by the service providers.
               </AlertDescription>
             </Alert>
 
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={form.formState.isSubmitting}>
-                Save Changes
-              </Button>
+            <DialogFooter className="flex justify-between flex-row">
+              <div>
+                <Button type="button" variant="outline" onClick={onClose}>
+                  Back to Chat
+                </Button>
+              </div>
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" onClick={onClose}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={form.formState.isSubmitting}>
+                  Save Changes
+                </Button>
+              </div>
             </DialogFooter>
           </form>
         </Form>
