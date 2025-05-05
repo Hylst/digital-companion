@@ -98,6 +98,30 @@ export function transformResponse(data: any, provider: string): { text: string; 
         };
       }
       break;
+    case 'openai':
+      if (data.choices && data.choices[0] && data.choices[0].message) {
+        return {
+          text: data.choices[0].message.content,
+          model: 'gpt-4'
+        };
+      }
+      break;
+    case 'perplexity':
+      if (data.choices && data.choices[0] && data.choices[0].message) {
+        return {
+          text: data.choices[0].message.content,
+          model: 'perplexity'
+        };
+      }
+      break;
+    case 'ollama':
+      if (data.response) {
+        return {
+          text: data.response,
+          model: 'ollama'
+        };
+      }
+      break;
   }
   
   // Default fallback
