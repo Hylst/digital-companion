@@ -259,52 +259,79 @@ async function generateWithDeepseek(prompt: string, companionData: any, options:
   }
 }
 
-// HuggingFace API client (free text generation fallback)
+// Simple text generation for free fallback
 async function generateWithHuggingFace(prompt: string, companionData: any, options: any = {}) {  
   const personalityContext = getPersonalityContext(companionData);
-  const systemPrompt = `You are ${companionData.name}, ${personalityContext}. 
-    Respond as if you are ${companionData.name} with the described personality traits.
-    Keep responses concise and engaging.`;
-
-  const fullPrompt = `${systemPrompt}\n\nUser: ${prompt}\n\n${companionData.name}:`;
-
-  try {
-    // Use the free public Hugging Face API with one of the open source models
-    const response = await axios.post(
-      'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2',
-      {
-        inputs: fullPrompt,
-        parameters: {
-          temperature: options.temperature || 0.7,
-          max_new_tokens: options.maxTokens || 800,
-          return_full_text: false
-        }
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json'
-        }
+  
+  // Simulate a reasonable response based on personality
+  const name = companionData.name;
+  const responseStart = getPersonalityBasedResponseStart(companionData.personality);
+  
+  // Extract the user's actual query from the prompt
+  const userQuery = prompt.split('\n').pop() || prompt;
+  
+  // Generate a simple response based on the personality and user query
+  let response = '';
+  
+  // Default friendly response if all else fails
+  if (userQuery.includes('hello') || userQuery.includes('hi ') || userQuery.includes('hey')) {
+    response = `Hello! I'm ${name}, your ${companionData.role}. How can I help you today?`;
+  } else if (userQuery.includes('how are you')) {
+    response = `I'm doing well, thank you for asking! As ${name}, I'm always ready to ${responseStart}. How are you feeling today?`;
+  } else if (userQuery.includes('help') || userQuery.includes('can you')) {
+    response = `I'd be happy to help! As your ${companionData.role}, I'm here to ${responseStart}. What specific assistance do you need?`;
+  } else if (userQuery.includes('thank')) {
+    response = `You're very welcome! I'm glad I could be of assistance. Is there anything else I can help with?`;
+  } else if (userQuery.includes('bye') || userQuery.includes('goodbye')) {
+    response = `Goodbye for now! Feel free to chat again anytime you need a ${companionData.personality} companion.`;
+  } else {
+    // Use the French language response if detected
+    if (userQuery.includes('bonjour') || userQuery.includes('salut') || userQuery.includes('merci') ||
+        userQuery.includes('au revoir') || userQuery.includes('j\'ai') || userQuery.includes('je suis')) {
+      if (userQuery.includes('j\'ai mal') || userQuery.includes('mal au')) {
+        response = `Je suis désolé d'entendre que vous avez mal. En tant que ${companionData.role}, je vous suggère de bien vous reposer et peut-être consulter un professionnel de santé si la douleur persiste. Prenez soin de vous!`;
+      } else if (userQuery.includes('bonjour') || userQuery.includes('salut')) {
+        response = `Bonjour! Je suis ${name}, votre ${companionData.role}. Comment puis-je vous aider aujourd'hui?`;
+      } else if (userQuery.includes('merci')) {
+        response = `De rien! Je suis heureux d'avoir pu vous aider. N'hésitez pas à me contacter si vous avez besoin d'autre chose.`;
+      } else if (userQuery.includes('au revoir')) {
+        response = `Au revoir! À bientôt, j'espère.`;
+      } else {
+        response = `En tant que votre compagnon ${companionData.personality}, je suis là pour vous écouter et vous aider. Comment puis-je vous assister aujourd'hui?`;
       }
-    );
-    
-    // Extract the generated text
-    let generatedText = '';
-    if (response.data && response.data[0] && response.data[0].generated_text) {
-      generatedText = response.data[0].generated_text;
-    } else if (typeof response.data === 'string') {
-      generatedText = response.data;
     } else {
-      console.error('Unexpected HuggingFace response format:', response.data);
-      generatedText = "I'm sorry, I couldn't generate a meaningful response right now.";
+      // Generic response based on personality
+      response = `As ${name}, I'm here to ${responseStart}. I understand you're asking about "${userQuery.substring(0, 30)}...". How specifically can I assist you with this matter?`;
     }
-    
-    return {
-      text: generatedText,
-      model: 'huggingface'
-    };
-  } catch (error) {
-    console.error('HuggingFace API error:', error);
-    throw error;
+  }
+  
+  return {
+    text: response,
+    model: 'fallback'
+  };
+}
+
+// Helper function to get personality-based response starts
+function getPersonalityBasedResponseStart(personality: string): string {
+  switch (personality) {
+    case 'friendly':
+      return 'offer warm and supportive advice';
+    case 'analytical':
+      return 'provide logical and detailed analysis';
+    case 'creative':
+      return 'offer imaginative and innovative perspectives';
+    case 'coach':
+      return 'motivate you and help you achieve your goals';
+    case 'philosophical':
+      return 'explore deeper meanings and thought-provoking insights';
+    case 'witty':
+      return 'bring some humor and clever observations to your day';
+    case 'supportive':
+      return 'provide compassionate understanding and emotional support';
+    case 'mentor':
+      return 'share wisdom and guidance to help you grow';
+    default:
+      return 'assist you in any way I can';
   }
 }
 

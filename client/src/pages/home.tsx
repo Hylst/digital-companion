@@ -91,8 +91,8 @@ export default function Home() {
         </Button>
       </div>
 
-      {/* Sidebar */}
-      <div className="hidden lg:block w-72 flex-shrink-0">
+      {/* Sidebar - Desktop (hidden on mobile) and Mobile (controlled by showMobileMenu) */}
+      <div className={`${showMobileMenu ? 'block' : 'hidden'} lg:block lg:w-72 lg:flex-shrink-0 z-50`}>
         <Sidebar 
           showMobileMenu={showMobileMenu} 
           onCloseMobileMenu={() => setShowMobileMenu(false)}
@@ -100,14 +100,6 @@ export default function Home() {
           onOpenApiKeysModal={() => setShowApiKeysModal(true)}
         />
       </div>
-
-      {/* Mobile Sidebar */}
-      <Sidebar 
-        showMobileMenu={showMobileMenu} 
-        onCloseMobileMenu={() => setShowMobileMenu(false)}
-        onOpenNewCompanionModal={() => setShowNewCompanionModal(true)}
-        onOpenApiKeysModal={() => setShowApiKeysModal(true)}
-      />
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col h-full overflow-hidden">
