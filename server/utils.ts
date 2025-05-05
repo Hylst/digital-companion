@@ -122,6 +122,19 @@ export function transformResponse(data: any, provider: string): { text: string; 
         };
       }
       break;
+    case 'huggingface':
+      if (Array.isArray(data) && data[0] && data[0].generated_text) {
+        return {
+          text: data[0].generated_text,
+          model: 'huggingface'
+        };
+      } else if (typeof data === 'string') {
+        return {
+          text: data,
+          model: 'huggingface'
+        };
+      }
+      break;
   }
   
   // Default fallback

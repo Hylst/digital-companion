@@ -259,6 +259,55 @@ async function generateWithDeepseek(prompt: string, companionData: any, options:
   }
 }
 
+// HuggingFace API client (free text generation fallback)
+async function generateWithHuggingFace(prompt: string, companionData: any, options: any = {}) {  
+  const personalityContext = getPersonalityContext(companionData);
+  const systemPrompt = `You are ${companionData.name}, ${personalityContext}. 
+    Respond as if you are ${companionData.name} with the described personality traits.
+    Keep responses concise and engaging.`;
+
+  const fullPrompt = `${systemPrompt}\n\nUser: ${prompt}\n\n${companionData.name}:`;
+
+  try {
+    // Use the free public Hugging Face API with one of the open source models
+    const response = await axios.post(
+      'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2',
+      {
+        inputs: fullPrompt,
+        parameters: {
+          temperature: options.temperature || 0.7,
+          max_new_tokens: options.maxTokens || 800,
+          return_full_text: false
+        }
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+    
+    // Extract the generated text
+    let generatedText = '';
+    if (response.data && response.data[0] && response.data[0].generated_text) {
+      generatedText = response.data[0].generated_text;
+    } else if (typeof response.data === 'string') {
+      generatedText = response.data;
+    } else {
+      console.error('Unexpected HuggingFace response format:', response.data);
+      generatedText = "I'm sorry, I couldn't generate a meaningful response right now.";
+    }
+    
+    return {
+      text: generatedText,
+      model: 'huggingface'
+    };
+  } catch (error) {
+    console.error('HuggingFace API error:', error);
+    throw error;
+  }
+}
+
 // Generate LLM response based on model
 export async function generateLLMResponse(options: GenerateLLMResponseOptions) {
   const { prompt, companionId, model, temperature, maxTokens } = options;
@@ -345,55 +394,7 @@ export async function generateLLMResponse(options: GenerateLLMResponseOptions) {
   }
 }
 
-// HuggingFace API client (free text generation fallback)
-async function generateWithHuggingFace(prompt: string, companionData: any, options: any = {}) {  
-  const personalityContext = getPersonalityContext(companionData);
-  const systemPrompt = `You are ${companionData.name}, ${personalityContext}. 
-    Respond as if you are ${companionData.name} with the described personality traits.
-    Keep responses concise and engaging.`;
-
-  const fullPrompt = `${systemPrompt}\n\nUser: ${prompt}\n\n${companionData.name}:`;
-
-  try {
-    // Use the free public Hugging Face API with one of the open source models
-    const response = await axios.post(
-      'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2',
-      {
-        inputs: fullPrompt,
-        parameters: {
-          temperature: options.temperature || 0.7,
-          max_new_tokens: options.maxTokens || 800,
-          return_full_text: false
-        }
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-    
-    // Extract the generated text
-    let generatedText = '';
-    if (response.data && response.data[0] && response.data[0].generated_text) {
-      generatedText = response.data[0].generated_text;
-    } else if (typeof response.data === 'string') {
-      generatedText = response.data;
-    } else {
-      console.error('Unexpected HuggingFace response format:', response.data);
-      generatedText = "I'm sorry, I couldn't generate a meaningful response right now.";
-    }
-    
-    return {
-      text: generatedText,
-      model: 'huggingface'
-    };
-  } catch (error) {
-    console.error('HuggingFace API error:', error);
-    throw error;
-  }
-}
-
+// Generate image using OpenAI DALL-E
 export async function generateImageWithOpenAI(prompt: string) {
   const apiKey = await getApiKey('openai');
   if (!apiKey) {
