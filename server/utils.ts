@@ -30,6 +30,10 @@ export async function validateApiKey(provider: string, key: string): Promise<boo
       return key.startsWith('sk-') || key.length > 20;
     case 'stability':
       return key.startsWith('sk-') || key.length > 20;
+    case 'openai':
+      return key.startsWith('sk-') || key.length > 20;
+    case 'perplexity':
+      return key.startsWith('pplx-') || key.length > 20;
     default:
       return key.length > 10;
   }

@@ -1,4 +1,4 @@
-export type AIModel = "gemini" | "deepseek" | "claude" | "gpt-4";
+export type AIModel = "gemini" | "deepseek" | "claude" | "gpt-4" | "ollama" | "perplexity";
 
 export interface Companion {
   id: number;
