@@ -202,8 +202,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(keyStatus);
     } catch (error) {
-      console.error('Error fetching API keys:', error);
-      res.status(500).json({ error: 'Failed to fetch API keys' });
+      console.error('Erreur lors de la récupération des clés API:', error);
+      res.status(500).json({ error: 'Échec de la récupération des clés API' });
     }
   });
   
@@ -211,10 +211,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { gemini, deepseek, stability } = req.body;
       
-      if (gemini) await storage.saveApiKey({ provider: 'gemini', key: gemini });
-      if (deepseek) await storage.saveApiKey({ provider: 'deepseek', key: deepseek });
-      if (stability) await storage.saveApiKey({ provider: 'stability', key: stability });
+      console.log('Requête de sauvegarde des clés API reçue:', { 
+        gemini: gemini ? '***' : undefined, 
+        deepseek: deepseek ? '***' : undefined, 
+        stability: stability ? '***' : undefined 
+      });
       
+      // Validation des clés
+      const keysToSave = [];
+      if (gemini !== undefined) keysToSave.push({ provider: 'gemini', key: gemini });
+      if (deepseek !== undefined) keysToSave.push({ provider: 'deepseek', key: deepseek });
+      if (stability !== undefined) keysToSave.push({ provider: 'stability', key: stability });
+      
+      if (keysToSave.length === 0) {
+        return res.status(400).json({ error: 'Aucune clé API fournie' });
+      }
+      
+      // Sauvegarder chaque clé individuellement pour une meilleure gestion des erreurs
+      let hasErrors = false;
+      for (const keyData of keysToSave) {
+        try {
+          await storage.saveApiKey(keyData);
+          console.log(`Clé API pour ${keyData.provider} sauvegardée avec succès`);
+        } catch (keyError) {
+          hasErrors = true;
+          console.error(`Erreur lors de la sauvegarde de la clé ${keyData.provider}:`, keyError);
+          // Continuer avec les autres clés même si une échoue
+        }
+      }
+      
+      // Récupérer les clés mises à jour
       const keys = await storage.getApiKeys();
       
       // Return status, not the actual keys
@@ -224,10 +250,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         stability: keys.some(k => k.provider === 'stability' && k.isValid)
       };
       
-      res.json(keyStatus);
+      console.log('Statut des clés API après sauvegarde:', keyStatus);
+      
+      if (hasErrors) {
+        res.status(207).json({
+          message: 'Certaines clés API ont été sauvegardées avec des erreurs',
+          status: keyStatus
+        });
+      } else {
+        res.json(keyStatus);
+      }
     } catch (error) {
-      console.error('Error saving API keys:', error);
-      res.status(500).json({ error: 'Failed to save API keys' });
+      console.error('Erreur lors de la sauvegarde des clés API:', error);
+      res.status(500).json({ 
+        error: 'Échec de la sauvegarde des clés API', 
+        message: error instanceof Error ? error.message : 'Erreur inconnue'
+      });
     }
   });
 

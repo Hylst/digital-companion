@@ -1,11 +1,12 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { sqliteTable, text, integer, blob } from "drizzle-orm/sqlite-core";
+import { sql } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
 
 // Base user table
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
+export const users = sqliteTable("users", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
 });
@@ -16,17 +17,17 @@ export const insertUserSchema = createInsertSchema(users).pick({
 });
 
 // AI Companions
-export const companions = pgTable("companions", {
-  id: serial("id").primaryKey(),
+export const companions = sqliteTable("companions", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   userId: integer("user_id").references(() => users.id),
   name: text("name").notNull(),
   role: text("role").notNull(),
   avatar: text("avatar"),
   description: text("description"),
   personality: text("personality").notNull(),
-  isOnline: boolean("is_online").default(true),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  lastInteraction: timestamp("last_interaction"),
+  isOnline: integer("is_online", { mode: "boolean" }).default(true),
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  lastInteraction: text("last_interaction"),
 });
 
 export const insertCompanionSchema = createInsertSchema(companions, {
@@ -36,52 +37,52 @@ export const insertCompanionSchema = createInsertSchema(companions, {
 });
 
 // Conversations
-export const conversations = pgTable("conversations", {
-  id: serial("id").primaryKey(),
+export const conversations = sqliteTable("conversations", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   userId: integer("user_id").references(() => users.id),
   companionId: integer("companion_id").references(() => companions.id).notNull(),
   name: text("name").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const insertConversationSchema = createInsertSchema(conversations);
 
 // Messages
-export const messages = pgTable("messages", {
-  id: serial("id").primaryKey(),
+export const messages = sqliteTable("messages", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   conversationId: integer("conversation_id").references(() => conversations.id).notNull(),
   content: text("content").notNull(),
   role: text("role").notNull(), // user or assistant
   imageUrl: text("image_url"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const insertMessageSchema = createInsertSchema(messages);
 
 // API Keys
-export const apiKeys = pgTable("api_keys", {
-  id: serial("id").primaryKey(),
+export const apiKeys = sqliteTable("api_keys", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   userId: integer("user_id").references(() => users.id),
   provider: text("provider").notNull(),
   key: text("key").notNull(),
-  isValid: boolean("is_valid").default(true),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  isValid: integer("is_valid", { mode: "boolean" }).default(true),
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const insertApiKeySchema = createInsertSchema(apiKeys);
 
 // Settings
-export const settings = pgTable("settings", {
-  id: serial("id").primaryKey(),
+export const settings = sqliteTable("settings", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
   userId: integer("user_id").references(() => users.id),
   activeModel: text("active_model").default("gemini"),
   theme: text("theme").default("light"),
-  voiceEnabled: boolean("voice_enabled").default(false),
-  preferences: jsonb("preferences").default({}),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  voiceEnabled: integer("voice_enabled", { mode: "boolean" }).default(false),
+  preferences: text("preferences", { mode: "json" }).default('{}'),
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
+  updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
 export const insertSettingsSchema = createInsertSchema(settings);

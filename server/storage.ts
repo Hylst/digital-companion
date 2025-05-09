@@ -11,7 +11,7 @@ import {
   insertCompanionSchema,
   insertMessageSchema
 } from "@shared/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, sql } from "drizzle-orm";
 
 export interface SaveMessageOptions {
   companionId: number;
@@ -118,21 +118,24 @@ export const storage = {
     
     // Update conversation last updated
     await db.update(conversations)
-      .set({ updatedAt: new Date() })
+      .set({ updatedAt: sql`CURRENT_TIMESTAMP` })
       .where(eq(conversations.id, conversation.id));
     
     // Update companion's last interaction time
     await db.update(companions)
-      .set({ lastInteraction: new Date() })
+      .set({ lastInteraction: sql`CURRENT_TIMESTAMP` })
       .where(eq(companions.id, companionId));
     
-    // Insert the message
-    const [message] = await db.insert(messages).values({
+    // Validate and insert the message
+    const validated = insertMessageSchema.parse({
       conversationId: conversation.id,
       content,
       role,
       imageUrl: imageUrl || null
-    }).returning();
+    });
+    
+    // Insert the message
+    const [message] = await db.insert(messages).values(validated).returning();
     
     return message;
   },
@@ -158,32 +161,52 @@ export const storage = {
   async saveApiKey(options: SaveApiKeyOptions): Promise<ApiKey> {
     const { provider, key } = options;
     
-    // Check if key already exists
-    const existingKey = await db.query.apiKeys.findFirst({
-      where: eq(apiKeys.provider, provider)
-    });
-    
-    if (existingKey) {
-      // Update existing key
-      const [updated] = await db.update(apiKeys)
-        .set({ 
-          key, 
-          isValid: true,
-          updatedAt: new Date()
-        })
-        .where(eq(apiKeys.id, existingKey.id))
-        .returning();
+    try {
+      console.log(`Tentative d'enregistrement de clé API pour le fournisseur: ${provider}`);
       
-      return updated;
-    } else {
-      // Insert new key
-      const [newKey] = await db.insert(apiKeys).values({
-        provider,
-        key,
-        isValid: true
-      }).returning();
+      // Vérifier si la clé est valide (non vide)
+      if (!key || key.trim() === '') {
+        console.error(`Clé API invalide pour ${provider}: clé vide`);
+        throw new Error(`Invalid API key for ${provider}: key is empty`);
+      }
       
-      return newKey;
+      // Check if key already exists
+      const existingKey = await db.query.apiKeys.findFirst({
+        where: eq(apiKeys.provider, provider)
+      });
+      
+      let result;
+      
+      if (existingKey) {
+        console.log(`Mise à jour d'une clé API existante pour ${provider}`);
+        // Update existing key
+        const [updated] = await db.update(apiKeys)
+          .set({ 
+            key, 
+            isValid: true,
+            updatedAt: sql`CURRENT_TIMESTAMP`
+          })
+          .where(eq(apiKeys.id, existingKey.id))
+          .returning();
+        
+        result = updated;
+      } else {
+        console.log(`Création d'une nouvelle clé API pour ${provider}`);
+        // Insert new key
+        const [newKey] = await db.insert(apiKeys).values({
+          provider,
+          key,
+          isValid: true
+        }).returning();
+        
+        result = newKey;
+      }
+      
+      console.log(`Clé API pour ${provider} enregistrée avec succès`);
+      return result;
+    } catch (error) {
+      console.error(`Erreur lors de l'enregistrement de la clé API pour ${provider}:`, error);
+      throw error; // Propager l'erreur pour une meilleure gestion dans la route
     }
   }
 };

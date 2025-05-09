@@ -1,15 +1,19 @@
 import { defineConfig } from "drizzle-kit";
+import { join } from "path";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL, ensure the database is provisioned");
-}
+// Obtenir le chemin absolu du répertoire db
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const dbPath = join(__dirname, "db", "sqlite.db");
 
 export default defineConfig({
   out: "./db/migrations",
   schema: "./shared/schema.ts",
-  dialect: "postgresql",
+  dialect: "sqlite",
   dbCredentials: {
-    url: process.env.DATABASE_URL,
+    url: `file:${dbPath}`,
   },
   verbose: true,
 });

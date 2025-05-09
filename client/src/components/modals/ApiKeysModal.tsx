@@ -78,6 +78,11 @@ export default function ApiKeysModal({ isOpen, onClose }: ApiKeysModalProps) {
             deepseek: !!data.deepseek,
             stability: !!data.stability,
           });
+          
+          // Reset visibility states when loading masked keys
+          setShowGemini(false);
+          setShowDeepseek(false);
+          setShowStability(false);
         }
       } catch (error) {
         console.error("Failed to fetch API keys", error);
@@ -123,18 +128,23 @@ export default function ApiKeysModal({ isOpen, onClose }: ApiKeysModalProps) {
         if (keysToUpdate.deepseek) form.setValue("deepseek", "●●●●●●●●●●●●●●●●●●●●");
         if (keysToUpdate.stability) form.setValue("stability", "●●●●●●●●●●●●●●●●●●●●");
         
+        // Reset visibility states after saving
+        setShowGemini(false);
+        setShowDeepseek(false);
+        setShowStability(false);
+        
         // Show success
         toast({
-          title: "API keys saved",
-          description: "Your API keys have been saved successfully.",
+          title: "Clés API enregistrées",
+          description: "Vos clés API ont été enregistrées avec succès.",
         });
         
         onClose();
       }
     } catch (error) {
       toast({
-        title: "Failed to save API keys",
-        description: "An error occurred while saving your API keys. Please try again.",
+        title: "Échec de l'enregistrement des clés API",
+        description: "Une erreur s'est produite lors de l'enregistrement de vos clés API. Veuillez réessayer.",
         variant: "destructive",
       });
     }

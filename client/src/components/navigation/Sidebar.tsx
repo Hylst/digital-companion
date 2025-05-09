@@ -12,6 +12,7 @@ import {
   SheetTrigger,
   SheetClose
 } from "@/components/ui/sheet";
+import HelpSupportModal from "../modals/HelpSupportModal";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +43,7 @@ export default function Sidebar({
 }: SidebarProps) {
   const isMobile = useMobile();
   const { companions, activeCompanion, setActiveCompanion, activeModel, setActiveModel } = useCompanionContext();
+  const [showHelpModal, setShowHelpModal] = useState(false);
   
   const handleCompanionClick = (companion: Companion) => {
     setActiveCompanion(companion);
@@ -160,16 +162,6 @@ export default function Sidebar({
                 className="w-full justify-start px-3 py-2 rounded-bubble hover:bg-light transition-colors h-auto"
                 onClick={onOpenApiKeysModal}
               >
-                <Cog className="text-gray-500 h-5 w-5 mr-3" />
-                <span>Settings</span>
-              </Button>
-            </li>
-            <li>
-              <Button
-                variant="ghost"
-                className="w-full justify-start px-3 py-2 rounded-bubble hover:bg-light transition-colors h-auto"
-                onClick={onOpenApiKeysModal}
-              >
                 <Key className="text-gray-500 h-5 w-5 mr-3" />
                 <span>API Keys</span>
               </Button>
@@ -178,7 +170,7 @@ export default function Sidebar({
               <Button
                 variant="ghost"
                 className="w-full justify-start px-3 py-2 rounded-bubble hover:bg-light transition-colors h-auto"
-                onClick={() => window.open('https://companionai.example.com/help', '_blank')}
+                onClick={() => setShowHelpModal(true)}
               >
                 <HelpCircle className="text-gray-500 h-5 w-5 mr-3" />
                 <span>Help & Support</span>
@@ -201,6 +193,9 @@ export default function Sidebar({
       ) : (
         Sidebar
       )}
+      
+      {/* Modal d'aide et support */}
+      <HelpSupportModal isOpen={showHelpModal} onClose={() => setShowHelpModal(false)} />
     </>
   );
 }
